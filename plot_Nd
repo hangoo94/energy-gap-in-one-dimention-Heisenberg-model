@@ -1,0 +1,18 @@
+function data = plot_Nd (do_pbc, do_negative)
+    if do_pbc && ~do_negative
+    data_file = 'data_pbc.csv';
+  elseif do_negative && ~do_pbc
+    data_file = 'data_negative.csv';
+  elseif do_pbc && do_negative
+     data_file = 'data_negative_pbc.csv';
+  else
+    data_file = 'data.csv';
+  end
+  if isfile(data_file)
+    data = csvread(data_file);
+  else
+    disp('no data file');
+    return
+  end
+  plot(data(:,1)', data(:,2)');
+end
