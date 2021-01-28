@@ -1,0 +1,39 @@
+function [H,E,d] = hamiltonian (N, do_pbc, do_negative)
+    tic
+    H = spalloc(2^N, 2^N, 2^N*(N/2+1));
+    for i = 1:2^N
+      i_stack = 0;
+      %s = g(i) list of spins
+      for n = 1:N
+        m = mod(n, N) + 1;
+        %s_new = s (spin m fliped)
+        j = bitxor(i-1, bitor(bitshift(1, N-n), bitshift(1, N-m))) + 1; %convert s_new to decimals
+        H(i,j) = H(i,j) + bitxor(bitget(i-1, N-n+1), bitget(i-1, N-m+1)) * 2;
+        i_stack = i_stack + 1 - bitxor(bitget(i-1, N-n+1), bitget(i-1, N-m+1)) * 2;
+        if ~do_pbc && n == N-1
+          break
+        end
+      end
+      H(i,i) = i_stack;
+    end
+    if do_negative
+      sigma = 'la';
+    else
+      sigma = 'sa';
+    end
+    if N <= 2
+      num_eig = 4;
+    else
+      num_eig = 8;
+    end
+    E = eigs(H, num_eig, sigma);
+    first = E(1);
+    for i = 2 : 8
+        if abs(first - E(i)) > 0.000001
+            second = E(i);
+            break;
+        end
+    end
+    d = abs(second - first)
+    time_laps= toc
+end
